@@ -87,9 +87,33 @@ import React, { createContext, useState, useEffect } from 'react';
         }
       };
 
+      const subscribeToOrders = (callback, restaurantId, status) => {
+        let query = supabase
+          .from('orders')
+          .select('*')
+          .eq('restaurant_id', restaurantId);
+
+        if (status) {
+          query = query.eq('status', status);
+        }
+
+        const subscription = query.on('*', (payload) => {
+          if (payload.eventType === 'INSERT' || payload.eventType === 'UPDATE' || payload.eventType === 'DELETE') {
+            query.then(({ data }) => {
+              callback(data);
+            });
+          }
+        }).subscribe();
+        return subscription;
+      };
+
+      const removeSubscription = (subscription) => {
+        supabase.removeSubscription(subscription);
+      };
+
       return (
         <SupabaseContext.Provider
-          value={{ supabase, session, user, isAdmin, createAdminUser }}
+          value={{ supabase, session, user, isAdmin, createAdminUser, subscribeToOrders, removeSubscription }}
         >
           {children}
         </SupabaseContext.Provider>

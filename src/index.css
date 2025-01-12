@@ -12,17 +12,22 @@ body {
     }
 
     .sidebar {
-      background-color: #343a40;
+      background-color: #2c3e50;
       color: white;
       width: 250px;
       padding: 20px 0;
       display: flex;
       flex-direction: column;
+      position: fixed;
+      left: 0;
+      top: 0;
+      height: 100%;
     }
 
     .sidebar h2 {
       padding: 0 20px;
       margin-bottom: 20px;
+      color: #fff;
     }
 
     .sidebar ul {
@@ -35,27 +40,62 @@ body {
       margin-bottom: 5px;
     }
 
-    .sidebar a {
+    .sidebar a,
+    .sidebar .menu-item {
       display: flex;
       align-items: center;
       text-decoration: none;
-      color: white;
+      color: #fff;
       padding: 10px 20px;
       transition: background-color 0.3s ease;
+      cursor: pointer;
+      justify-content: space-between;
     }
 
     .sidebar a:hover,
-    .sidebar a.active {
-      background-color: #495057;
+    .sidebar a.active,
+    .sidebar .menu-item:hover {
+      background-color: #34495e;
     }
 
-    .sidebar a svg {
+    .sidebar a.active {
+      background-color: #e67e22;
+    }
+
+    .sidebar a svg,
+    .sidebar .menu-item svg {
       margin-right: 10px;
+    }
+
+    .sidebar .arrow-icon {
+      margin-left: auto;
+      transition: transform 0.3s ease;
+    }
+
+    .sidebar .has-submenu.open .arrow-icon {
+      transform: rotate(90deg);
+    }
+
+    .sidebar .submenu {
+      list-style: none;
+      padding-left: 20px;
+      margin: 0;
+      display: none;
+    }
+
+    .sidebar .has-submenu.open .submenu {
+      display: block;
+    }
+
+    .sidebar .submenu li a {
+      padding: 10px 20px;
+      display: block;
     }
 
     .content {
       flex: 1;
       padding: 20px;
+      margin-left: 250px;
     }
 
     .dashboard-header {
@@ -182,6 +222,8 @@ body {
         width: 100%;
         flex-direction: row;
         overflow-x: auto;
+        position: static;
+        height: auto;
       }
 
       .sidebar ul {
@@ -191,6 +233,10 @@ body {
       .sidebar li {
         margin-right: 10px;
         margin-bottom: 0;
+      }
+
+      .content {
+        margin-left: 0;
       }
 
       .dashboard-cards {
@@ -247,4 +293,83 @@ body {
 
     .auth-form button:hover {
       background-color: #0056b3;
+    }
+    .form-container {
+      background-color: white;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      margin-bottom: 20px;
+    }
+
+    .form-container h2 {
+      margin-top: 0;
+      margin-bottom: 20px;
+    }
+
+    .form-container label {
+      display: block;
+      margin-bottom: 5px;
+    }
+
+    .form-container input,
+    .form-container select {
+      width: 100%;
+      padding: 8px;
+      margin-bottom: 10px;
+      border: 1px solid #ced4da;
+      border-radius: 4px;
+    }
+
+    .form-container button {
+      padding: 10px 15px;
+      border: none;
+      border-radius: 5px;
+      background-color: #007bff;
+      color: white;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+
+    .form-container button:hover {
+      background-color: #0056b3;
+    }
+
+    .table-container {
+      background-color: white;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .table-container h2 {
+      margin-top: 0;
+      margin-bottom: 20px;
+    }
+
+    .data-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    .data-table th,
+    .data-table td {
+      border: 1px solid #dee2e6;
+      padding: 8px;
+      text-align: left;
+    }
+
+    .data-table th {
+      background-color: #f0f0f0;
+    }
+    .order-item {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+
+    .form-buttons {
+      display: flex;
+      gap: 10px;
     }

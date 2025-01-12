@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState, useRef } from 'react';
     import { Routes, Route, Link, useLocation, useNavigate } from 'react-router-dom';
     import Dashboard from './components/Dashboard';
     import OrderManagement from './components/OrderManagement';
@@ -26,6 +26,7 @@ import React, { useContext, useEffect, useState } from 'react';
       FaFileInvoiceDollar,
       FaCog,
       FaSignInAlt,
+      FaChevronRight,
     } from 'react-icons/fa';
 
     function App() {
@@ -33,18 +34,30 @@ import React, { useContext, useEffect, useState } from 'react';
       const navigate = useNavigate();
       const { supabase, session, user, isAdmin, createAdminUser } = useContext(SupabaseContext);
       const [loading, setLoading] = useState(true);
+      const [isOrdersOpen, setIsOrdersOpen] = useState(false);
+      const [isMenuOpen, setIsMenuOpen] = useState(false);
+      const [initialized, setInitialized] = useState(false);
+      const navigationRef = useRef(false);
 
       useEffect(() => {
         const initialize = async () => {
           setLoading(true);
           if (!session) {
-            navigate('/login');
+            if (!navigationRef.current) {
+              navigationRef.current = true;
+              navigate('/login');
+            }
           } else {
             if (user && !isAdmin) {
-              navigate('/');
+              if (!navigationRef.current) {
+                navigationRef.current = true;
+                navigate('/');
+              }
             }
           }
           setLoading(false);
+          setInitialized(true);
+          navigationRef.current = false;
         };
         initialize();
       }, [session, navigate, user, isAdmin]);
@@ -55,8 +68,10 @@ import React, { useContext, useEffect, useState } from 'react';
             await createAdminUser();
           }
         };
-        createInitialAdmin();
-      }, [session, isAdmin, createAdminUser]);
+        if (initialized) {
+          createInitialAdmin();
+        }
+      }, [session, isAdmin, createAdminUser, initialized]);
 
       if (loading) {
         return <div>Loading...</div>;
@@ -64,16 +79,22 @@ import React, { useContext, useEffect, useState } from 'react';
 
       const ProtectedRoute = ({ children }) => {
         if (!session) {
-          return navigate('/login');
+          if (!navigationRef.current) {
+            navigationRef.current = true;
+            navigate('/login');
+          }
+          return null;
         }
+        navigationRef.current = false;
         return children;
       };
 
-      const AdminRoute = ({ children }) => {
-        if (!session || !isAdmin) {
-          return navigate('/');
-        }
-        return children;
+      const toggleOrders = () => {
+        setIsOrdersOpen(!isOrdersOpen);
+      };
+
+      const toggleMenu = () => {
+        setIsMenuOpen(!isMenuOpen);
       };
 
       return (
@@ -87,10 +108,29 @@ import React, { useContext, useEffect, useState } from 'react';
                     <FaTh /> Dashboard
                   </Link>
                 </li>
-                <li>
-                  <Link to="/orders" className={location.pathname === '/orders' ? 'active' : ''}>
-                    <FaShoppingCart /> Orders
-                  </Link>
+                <li className={`has-submenu ${isOrdersOpen ? 'open' : ''}`}>
+                  <div className="menu-item" onClick={toggleOrders}>
+                    <FaShoppingCart /> Orders <FaChevronRight className="arrow-icon" />
+                  </div>
+                  {isOrdersOpen && (
+                    <ul className="submenu">
+                      <li>
+                        <Link to="/orders/new" className={location.pathname === '/orders/new' ? 'active' : ''}>
+                          New Order
+                        </Link>
+                      </li>
+                      <li>
+                        <Link to="/orders/pending" className={location.pathname === '/orders/pending' ? 'active' : ''}>
+                          Pending Orders
+                        </Link>
+                      </li>
+                      <li>
+                        <Link to="/orders/all" className={location.pathname === '/orders/all' ? 'active' : ''}>
+                          All Orders
+                        </Link>
+                      </li>
+                    </ul>
+                  )}
                 </li>
                 <li>
                   <Link to="/tables" className={location.pathname === '/tables' ? 'active' : ''}>
@@ -102,10 +142,19 @@ import React, { useContext, useEffect, useState } from 'react';
                     <FaCalendarAlt /> Reservation
                   </Link>
                 </li>
-                <li>
-                  <Link to="/menu" className={location.pathname === '/menu' ? 'active' : ''}>
-                    <FaUtensils /> Menus
-                  </Link>
+                <li className={`has-submenu ${isMenuOpen ? 'open' : ''}`}>
+                  <div className="menu-item" onClick={toggleMenu}>
+                    <FaUtensils /> Menus <FaChevronRight className="arrow-icon" />
+                  </div>
+                  {isMenuOpen && (
+                    <ul className="submenu">
+                      <li>
+                        <Link to="/menu" className={location.pathname === '/menu' ? 'active' : ''}>
+                          Menu Items
+                        </Link>
+                      </li>
+                    </ul>
+                  )}
                 </li>
                 <li>
                   <Link to="/staff" className={location.pathname === '/staff' ? 'active' : ''}>
@@ -132,13 +181,11 @@ import React, { useContext, useEffect, useState } from 'react';
                     <FaFileInvoiceDollar /> Billing
                   </Link>
                 </li>
-                <AdminRoute>
-                  <li>
-                    <Link to="/settings" className={location.pathname === '/settings' ? 'active' : ''}>
-                      <FaCog /> Settings
-                    </Link>
-                  </li>
-                </AdminRoute>
+                <li>
+                  <Link to="/settings" className={location.pathname === '/settings' ? 'active' : ''}>
+                    <FaCog /> Settings
+                  </Link>
+                </li>
               </ul>
             </aside>
           )}
@@ -154,7 +201,7 @@ import React, { useContext, useEffect, useState } from 'react';
                 }
               />
               <Route
-                path="/orders"
+                path="/orders/*"
                 element={
                   <ProtectedRoute>
                     <OrderManagement />
@@ -228,9 +275,9 @@ import React, { useContext, useEffect, useState } from 'react';
               <Route
                 path="/settings"
                 element={
-                  <AdminRoute>
+                  <ProtectedRoute>
                     <Settings />
-                  </AdminRoute>
+                  </ProtectedRoute>
                 }
               />
               <Route path="/login" element={<Login />} />
